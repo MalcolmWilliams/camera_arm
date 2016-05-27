@@ -2,6 +2,7 @@
 #define X_STEP A0
 #define X_DIR A1
 #define X_EN 38
+/*
 void setup() {
   // put your setup code here, to run once:
 pinMode(X_STEP, OUTPUT);
@@ -21,29 +22,16 @@ delay(100);
 digitalWrite(X_STEP, LOW);
 digitalWrite(13, LOW);
 delay(100);
-
 }
+*/
 
-/*
-#define BAUD (57600) // How fast is the Arduino talking?
+#define BAUD (115200) // How fast is the Arduino talking?
 #define MAX_BUF (64) // What is the longest message Arduino can store?
 
 char buffer[MAX_BUF]; // where we store the message until we get a ';'
 int sofar; // how much is in the buffer
 
-
-// First thing this machine does on startup. Runs only once.
- 
-void setup() {
-  Serial.begin(BAUD); // open coms
-  help(); // say hello
-  //set_feedrate(200); // set default speed
-  ready();
-}
-
-
  // display helpful information
- 
 void help() {
   Serial.print(F("CNC Robot "));
   //Serial.println(VERSION);
@@ -61,16 +49,23 @@ void help() {
 
  // prepares the input buffer to receive a new message and 
  // tells the serial connected device it is ready for more.
- 
 void ready() {
   sofar=0; // clear input buffer
   Serial.print(F("> ")); // signal ready to receive input
 }
 
+void processCommand();
+float parsenumber(char code,float val); 
 
+// First thing this machine does on startup. Runs only once.
+void setup() {
+  Serial.begin(BAUD); // open coms
+  help(); // say hello
+  //set_feedrate(200); // set default speed
+  ready();
+}
 
  // After setup() this machine will repeat loop() forever.
- 
 void loop() {
   // listen for commands
   if( Serial.available() ) { // if something is available
@@ -101,7 +96,7 @@ void processCommand() {
   // look for commands that start with 'G'
   int cmd=parsenumber('G',-1);
   switch(cmd) {
-  case 0: // move in a line
+  case 0: Serial.print("G0"); // move in a line
   case 1: // move in a line
     //set_feedrate(parsenumber('F',fr));
     //line( parsenumber('X',(mode_abs?px:0)) + (mode_abs?0:px),
@@ -132,7 +127,8 @@ void processCommand() {
     //m1.release();
     //m2.release();
     break;
-  case 100: help(); break;
+  case 100: //help();
+	 break;
   case 114: 
     //where(); 
     break; // prints px, py, fr, and mode.
@@ -152,4 +148,4 @@ float parsenumber(char code,float val) {
   }
   return val;
 }
-*/
+

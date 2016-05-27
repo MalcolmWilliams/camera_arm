@@ -30,18 +30,18 @@ int main(int argc, char *argv[])
   struct termios toptions;
 
   /* open serial port */
-  fd = open("/dev/ttyTHS1", O_RDWR | O_NOCTTY); //tx: j3A2_68, rx: j3A2_65
-  //fd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY);
+  //fd = open("/dev/ttyTHS1", O_RDWR | O_NOCTTY); //tx: j3A2_68, rx: j3A2_65
+  fd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY);		//arduino serial port
   printf("fd opened as %i\n", fd);
   
   /* wait for the Arduino to reboot */
-  //usleep(3500000);
+  usleep(3500000);
   
   /* get current serial port settings */
   tcgetattr(fd, &toptions);
   /* set 9600 baud both ways */
-  cfsetispeed(&toptions, B9600);
-  cfsetospeed(&toptions, B9600);
+  cfsetispeed(&toptions, B115200);
+  cfsetospeed(&toptions, B115200);
   /* 8 bits, no parity, no stop bits */
   toptions.c_cflag &= ~PARENB;
   toptions.c_cflag &= ~CSTOPB;
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
   tcsetattr(fd, TCSANOW, &toptions);
 
 
-  char out_buf[10] = "012";
+  char out_buf[10] = "G0 X0";
 
   /* Send byte to trigger Arduino to send string back */
   write(fd, out_buf, 3);
