@@ -53,10 +53,10 @@ int main(int argc, char *argv[])
   tcsetattr(fd, TCSANOW, &toptions);
 
 
-  char out_buf[10] = "G0 X0";
+  char out_buf[10] = "G0 X0\n";
 
   /* Send byte to trigger Arduino to send string back */
-  write(fd, out_buf, 3);
+  write(fd, out_buf, 10);
   /* Receive string from Arduino */
   n = read(fd, buf, 64);
   /* insert terminating zero in the string */

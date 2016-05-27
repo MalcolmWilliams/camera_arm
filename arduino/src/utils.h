@@ -5,9 +5,9 @@
 //pinMode(X_DIR, OUTPUT);
 //pinMode(X_EN, OUTPUT);
 
-//#define X_STEP  A0
-//#define X_DIR   A1
-//#define X_EN	38
+#define X_STEP  54//A0
+#define X_DIR   55//A1
+#define X_EN	38
 
 #define BIT0 0x01
 #define BIT1 0x02
