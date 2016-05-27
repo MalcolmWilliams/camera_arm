@@ -10,9 +10,9 @@ class gcode_parse
 		int sofar; // how much is in the buffer
 	public:
 		gcode_parse();
-		void help(void);
+		void help();
 		float parsenumber(char code,float val); 
 		void data_recieved(char c);
-		void ready(void);
-		void processCommand(void);
+		void ready();
+		void processCommand();
 };

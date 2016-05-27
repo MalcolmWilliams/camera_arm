@@ -7,13 +7,13 @@
 
  // prepares the input buffer to receive a new message and 
  // tells the serial connected device it is ready for more.
-void gcode_parse::ready(void) {
+void gcode_parse::ready() {
   sofar=0; // clear input buffer
   Serial.print(F("> ")); // signal ready to receive input
 }
 
  // display helpful information
-void gcode_parse::help(void) {
+void gcode_parse::help() {
   Serial.print(F("CNC Robot "));
   //Serial.println(VERSION);
   Serial.println(F("Commands:"));
@@ -39,8 +39,7 @@ float gcode_parse::parsenumber(char code,float val) {
   return val;
 }
 
-void gcode_parse::data_recieved(char c)
-{    
+void gcode_parse::data_recieved(char c) {    
 	//char c = Serial.read(); // get it
     //Serial.print(c); // optional: repeat back what I got for debugging
 
@@ -55,9 +54,10 @@ void gcode_parse::data_recieved(char c)
       buffer[sofar]=0;
       processCommand(); // do something with the command
       ready();
+	}
 }
 
-gcode_parse::gcode_parse(void) 
+gcode_parse::gcode_parse() 
 {
   Serial.begin(BAUD); // open coms
   help(); // say hello
@@ -67,7 +67,7 @@ gcode_parse::gcode_parse(void)
 
 
 // Read the input buffer and find any recognized commands. One G or M command per line.
-void gcode_parse::processCommand(void) {
+void gcode_parse::processCommand() {
   // look for commands that start with 'G'
   int cmd=parsenumber('G',-1);
   switch(cmd) {
