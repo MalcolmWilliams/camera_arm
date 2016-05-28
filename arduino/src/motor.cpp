@@ -113,3 +113,15 @@ void Motor::goto_position(float new_pos)
 		//delay(2);
 	}
 }
+
+void Motor::pulse_high()
+{
+	position += deg_per_step*direction;
+	if(position < lim_max && position > 0)
+		digitalWrite(step_pin, HIGH);
+}
+
+void Motor::pulse_low()
+{
+	digitalWrite(step_pin, LOW);
+}

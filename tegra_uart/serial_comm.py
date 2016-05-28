@@ -16,6 +16,7 @@ def home(ser):
 
 def goto(ser, pos):
     ser.write("G0 X"+str(pos[0])+" Y"+str(pos[1])+" Z"+str(pos[2])+"\n")
+    #print ser.readline()
     ser.readline()
 
 def get_position(ser):
@@ -39,5 +40,8 @@ ser.readline()
 home(ser)
 #ser.write("M18\n")
 get_position(ser)
-goto(ser,[80, 360, 1540])
+for i in range(3):
+    goto(ser,[540, 160, 40])
+    #get_position(ser);
+    goto(ser,[40,370,540])
 get_position(ser)

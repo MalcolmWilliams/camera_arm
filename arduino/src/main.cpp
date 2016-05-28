@@ -20,7 +20,7 @@ void processCommand();
 
 //motor command variables
 #define NUM_MOTOR 3 
-#define DEG_PER_STEP 1.8/32
+#define DEG_PER_STEP (1.8/32)
 void home_all();
 void motors_off();
 void motors_on();
@@ -189,12 +189,54 @@ void motors_off()
 	for(i=0;i<NUM_MOTOR;i++) motor[i]->disable();
 }
 
+/* old implementation
 void goto_position(float pos_0, float pos_1, float pos_2)
 {
 	float pos[3] = {pos_0, pos_1, pos_2};
 	int i;
 	for(i=0;i<NUM_MOTOR;i++) motor[i]->goto_position(pos[i]);
 }
+*/
+
+void goto_position(float pos_0, float pos_1, float pos_2)
+{
+	//also need to make relative
+
+	float pos[3] = {
+					(pos_0 - motor[0]->get_position())/DEG_PER_STEP, 
+					(pos_1 - motor[1]->get_position())/DEG_PER_STEP, 
+					(pos_2 - motor[2]->get_position())/DEG_PER_STEP 
+					};
+
+	float max = 0;
+	int i, j;
+	for(i=0; i<NUM_MOTOR; i++)	
+	{
+		if(pos[i] > max) max = pos[i];
+		if(pos[i] < 0) motor[i]->set_direction(-1);
+		else motor[i]->set_direction(1);
+	}	
+	float ratio[3] = {abs(pos[0]/max), abs(pos[1]/max), abs(pos[2]/max)};
+	float step_counter[3] = {0, 0, 0};
+
+	int int_max = int(max+0.5);	//round to nearest int for for loop
+
+	for(i=0; i<int_max;i++)
+	{
+		for(j=0; j<3;j++)
+		{
+			step_counter[j] += ratio[j];
+			if(step_counter[j]>1)
+			{
+				step_counter[j] -= 1;
+				motor[j]->pulse_high();
+				motor[j]->pulse_low();
+			}
+		}
+		delayMicroseconds(200);
+	}
+}
+
 
 void motors_on()
 {

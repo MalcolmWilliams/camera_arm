@@ -61,6 +61,8 @@ class Motor
 		void set_direction(int direction);
 		float get_position();
 		void goto_position(float new_pos);
+		void pulse_high();
+		void pulse_low();
 };
 
 #endif
