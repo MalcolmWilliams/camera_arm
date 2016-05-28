@@ -48,8 +48,9 @@ class Motor
 	float position;	//current rotation of the motor in degrees
 	float deg_per_step;
 	int direction;
+	float lim_max;
 	public:
-		Motor(int num, int new_home_direction, float new_deg_per_step);
+		Motor(int num, int new_home_direction, float new_deg_per_step, float new_lim_max);
 		void init_pins(int new_step_pin, int new_dir_pin, int new_en_pin, int new_limit_pin);
 		void enable();
 		void disable();

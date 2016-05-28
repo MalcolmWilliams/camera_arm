@@ -18,7 +18,6 @@ void data_recieved(char c);
 void ready();
 void processCommand();
 
-
 //motor command variables
 #define NUM_MOTOR 3 
 #define DEG_PER_STEP 1.8/32
@@ -26,15 +25,16 @@ void home_all();
 void motors_off();
 void motors_on();
 void goto_position(float pos_0, float pos_1, float pos_2);
+void get_position();
 
 Motor *motor[NUM_MOTOR];
-
+float lim_max[NUM_MOTOR] = {2880,540,540};
 
 // First thing this machine does on startup. Runs only once.
 void setup() {
 	int i;
 	//motor[0] = new Motor(0, 1, 1.8/16);
-	for(i=0; i < NUM_MOTOR; i++) motor[i] = new Motor(i, 1,DEG_PER_STEP); 
+	for(i=0; i < NUM_MOTOR; i++) motor[i] = new Motor(i, -1,DEG_PER_STEP, lim_max[i]); 
 	//g = new gcode_parse();
 	gcode_parse_init();
 	motors_on();
@@ -98,7 +98,7 @@ void processCommand() {
 		help();
 		break;
   	case 114: 
-    	//where(); 
+		get_position();
     	break; // prints px, py, fr, and mode.
   	default: break;
   	}
@@ -112,7 +112,7 @@ void processCommand() {
  // tells the serial connected device it is ready for more.
 void ready() {
   sofar=0; // clear input buffer
-  Serial.print(F("> ")); // signal ready to receive input
+  Serial.println(F("> ")); // signal ready to receive input
 }
 
  // display helpful information
@@ -158,7 +158,7 @@ void data_recieved(char c) {
     if(sofar < MAX_BUF) buffer[sofar++]=c;
     // if we got a return character (\n) the message is done.
     if(c=='\n') {
-      Serial.print(F("\r\n")); // optional: send back a return for debugging
+      //Serial.print(F("\r\n")); // optional: send back a return for debugging
 
       // strings must end with a \0.
       buffer[sofar]=0;
@@ -201,3 +201,13 @@ void motors_on()
 	int i;
 	for(i=0;i<NUM_MOTOR;i++) motor[i]->enable();
 }
+
+void get_position()
+{
+	int i;
+	for(i=0;i<NUM_MOTOR;i++) 
+		Serial.print(String(motor[i]->get_position()) +" ");
+	Serial.println("");
+		
+}
+
