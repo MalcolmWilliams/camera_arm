@@ -58,6 +58,8 @@ class Motor
 		bool home();
 		int at_limit();
 		void set_direction(int direction);
+		float get_position();
+		void goto_position(float new_pos);
 };
 
 #endif

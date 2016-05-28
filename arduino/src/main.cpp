@@ -4,7 +4,7 @@
 #include "utils.h"
 
 
-
+//gcode parsing variables
 #define BAUD (115200) // How fast is the Arduino talking?
 #define MAX_BUF (64) // What is the longest message Arduino can store?
 
@@ -18,29 +18,34 @@ void data_recieved(char c);
 void ready();
 void processCommand();
 
-/**/
-//gcode_parse *g;
-Motor *motor[3];
+
+//motor command variables
+#define NUM_MOTOR 3 
+#define DEG_PER_STEP 1.8/32
+void home_all();
+void motors_off();
+void motors_on();
+void goto_position(float pos_0, float pos_1, float pos_2);
+
+Motor *motor[NUM_MOTOR];
+
+
 // First thing this machine does on startup. Runs only once.
 void setup() {
 	int i;
 	//motor[0] = new Motor(0, 1, 1.8/16);
-	for(i=0; i < 3; i++) motor[i] = new Motor(i, 1, 1.8/16);
+	for(i=0; i < NUM_MOTOR; i++) motor[i] = new Motor(i, 1,DEG_PER_STEP); 
 	//g = new gcode_parse();
 	gcode_parse_init();
-	motor[0]->enable();
-	//int* pins = motor[0]->getPins();
-	//Serial.println( String(pins[0]) + ", " + String(pins[1]) + ", " + String(pins[2]) );
-	//motor[0] -> home();
+	motors_on();
+	//motor[0]->enable();
 }
 
  // After setup() this machine will repeat loop() forever.
 void loop() {
-    //motor[0]->step();
 	// listen for commands
 
 	if( Serial.available() ) { // if something is available
-    	//Serial.println("HEELOOO\n\n\n");
 		data_recieved(Serial.read());
 	}
 
@@ -50,52 +55,55 @@ void loop() {
 
 // Read the input buffer and find any recognized commands. One G or M command per line.
 void processCommand() {
-  // look for commands that start with 'G'
-  int cmd=parsenumber('G',-1);
-  switch(cmd) {
-  case 0: 
-	motor[0]->home();
-	Serial.print("G0"); // move in a line
-	break;
-  case 1: // move in a line
-    //set_feedrate(parsenumber('F',fr));
-    //line( parsenumber('X',(mode_abs?px:0)) + (mode_abs?0:px),
-    //parsenumber('Y',(mode_abs?py:0)) + (mode_abs?0:py) );
-    break;
-  // case 2: // clockwise arc
-  // case 3: // counter-clockwise arc
-  case 4: 
-    //pause(parsenumber('P',0)*1000); 
-    break; // wait a while
-  case 90: 
-    //mode_abs=1; 
-    //break; // absolute mode
-  case 91: 
-    //mode_abs=0; 
-    break; // relative mode
-  case 92: // set logical position
-    //position( parsenumber('X',0),
-    //parsenumber('Y',0) );
-    break;
-  default: break;
-  }
+	// look for commands that start with 'G'
+  	int cmd=parsenumber('G',-1);
+  	switch(cmd) {
+  	case 0: 
+		goto_position(parsenumber('X',motor[0]->get_position()),  parsenumber('Y',motor[1]->get_position()), parsenumber('Z', motor[2]->get_position()));
+		//motor[0]->home();
+		//Serial.print("G0"); // move in a line
+		break;
+  	case 1: // move in a line
+   		//set_feedrate(parsenumber('F',fr));
+   		//line( parsenumber('X',(mode_abs?px:0)) + (mode_abs?0:px),
+   		//parsenumber('Y',(mode_abs?py:0)) + (mode_abs?0:py) );
+  	  	break;
+ 	// case 2: // clockwise arc
+ 	// case 3: // counter-clockwise arc
+  	case 4: 
+    	//pause(parsenumber('P',0)*1000); 
+	case 28:	//home
+		home_all();	
+    	break; // wait a while
+  	case 90: 
+    	//mode_abs=1; 
+    	//break; // absolute mode
+  	case 91: 
+    	//mode_abs=0; 
+    	break; // relative mode
+  	case 92: // set logical position
+    	//position( parsenumber('X',0),
+    	//parsenumber('Y',0) );
+    	break;
+  	default: break;
+	}
 
-  // look for commands that start with 'M'
-  cmd=parsenumber('M',-1);
-  switch(cmd) {
-  case 18: // turns off power to steppers (releases the grip)
-    //m1.release();
-    //m2.release();
-    break;
-  case 100: //help();
-	 break;
-  case 114: 
-    //where(); 
-    break; // prints px, py, fr, and mode.
-  default: break;
-  }
+  	// look for commands that start with 'M'
+  	cmd=parsenumber('M',-1);
+ 	switch(cmd) {
+  	case 18: // turns off power to steppers (releases the grip)
+    	motors_off();
+		break;
+  	case 100: 
+		help();
+		break;
+  	case 114: 
+    	//where(); 
+    	break; // prints px, py, fr, and mode.
+  	default: break;
+  	}
 
-  // if the string has no G or M commands it will get here and the Arduino will silently ignore it
+// if the string has no G or M commands it will get here and the Arduino will silently ignore it
 }
 
 
@@ -104,7 +112,7 @@ void processCommand() {
  // tells the serial connected device it is ready for more.
 void ready() {
   sofar=0; // clear input buffer
-  //Serial.print(F("> ")); // signal ready to receive input
+  Serial.print(F("> ")); // signal ready to receive input
 }
 
  // display helpful information
@@ -123,6 +131,13 @@ void help() {
   Serial.println(F("M114; - report position and feedrate"));
 }
 
+
+/**
+ * Look for character /code/ in the buffer and read the float that immediately follows it.
+ * @return the value found.  If nothing is found, /val/ is returned.
+ * @input code the character to look for.
+ * @input val the return value if /code/ is not found.
+ **/
 float parsenumber(char code,float val) {
   char *ptr=buffer;
   while(ptr && *ptr && ptr<buffer+sofar) {
@@ -161,36 +176,28 @@ void gcode_parse_init()
 }
 
 
-
-
-
-
-/**/
-
-
-/**
- void setup() {
- // put your setup code here, to run once:
- pinMode(X_STEP, OUTPUT);
- pinMode(X_DIR, OUTPUT);
- pinMode(X_EN, OUTPUT);
- pinMode(13, OUTPUT);
- 
- digitalWrite(X_DIR, HIGH);
- digitalWrite(X_EN, LOW);
-}
- 
- void loop() {
- // put your main code here, to run repeatedly:
- digitalWrite(X_STEP, HIGH);
- digitalWrite(13, HIGH);
- delay(1);
- digitalWrite(X_STEP, LOW);
- digitalWrite(13, LOW);
- delay(1);
+//gcode commands
+void home_all()
+{
+	int i;
+	for(i=0;i<NUM_MOTOR;i++) motor[i]->home();
 }
 
-/**/
+void motors_off()
+{
+	int i;
+	for(i=0;i<NUM_MOTOR;i++) motor[i]->disable();
+}
 
+void goto_position(float pos_0, float pos_1, float pos_2)
+{
+	float pos[3] = {pos_0, pos_1, pos_2};
+	int i;
+	for(i=0;i<NUM_MOTOR;i++) motor[i]->goto_position(pos[i]);
+}
 
-
+void motors_on()
+{
+	int i;
+	for(i=0;i<NUM_MOTOR;i++) motor[i]->enable();
+}

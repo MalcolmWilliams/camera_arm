@@ -21,7 +21,7 @@ void Motor::init_pins(int new_step_pin, int new_dir_pin, int new_en_pin, int new
 	pinMode(step_pin, OUTPUT);
 	pinMode(dir_pin,  OUTPUT);
 	pinMode(en_pin,   OUTPUT);
-	pinMode(limit_pin, INPUT);
+	pinMode(limit_pin, INPUT_PULLUP);
 
 	//digitalWrite(dir_pin, HIGH);
 }
@@ -60,10 +60,10 @@ bool Motor::home()
 {
 	position = 0;
 	set_direction(home_direction);
-	while(!at_limit() && position < 360 && position > -360)//exit early if the motor makes a full turn in either direction (likely means something is wrong)
+	while(!at_limit() && position < 8*360)//if the motor needs to make more than 8 full turns, something is wrong
 	{
 		step();
-		delay(1);
+		//delay(1);
 	}
 	if(at_limit())
 	{
@@ -74,13 +74,36 @@ bool Motor::home()
 	}
 }
 
-void Motor::set_direction(int direction)
+void Motor::set_direction(int new_direction)
 {
+	direction = new_direction;
 	if(direction == -1) digitalWrite(dir_pin, LOW);
 	if(direction ==  1) digitalWrite(dir_pin, HIGH);
 }
 
 int Motor::at_limit()
 {
-	return digitalRead(limit_pin);
+	//return 1 if at limit. since it is a pullup we thus invert it. 
+	return digitalRead(limit_pin)-1;
+}
+
+float Motor::get_position()
+{
+	return position;
+}
+
+void Motor::goto_position(float new_pos)
+{
+	float relative_pos = new_pos - position;
+	if(relative_pos == 0) return;
+	if(relative_pos < 0) direction = -1;
+	else direction = 1;
+	
+	set_direction(direction);
+
+	while( abs(get_position() - new_pos) > deg_per_step) 
+	{
+		step();
+		delay(2);
+	}
 }
