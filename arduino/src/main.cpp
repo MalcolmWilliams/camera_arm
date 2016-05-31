@@ -233,7 +233,7 @@ void goto_position(float pos_0, float pos_1, float pos_2)
 				motor[j]->pulse_low();
 			}
 		}
-		delayMicroseconds(200);
+		delayMicroseconds(100);
 	}
 }
 
